@@ -4,15 +4,18 @@ declare(strict_types=1);
 
 namespace App\Integrations\GetAddress;
 
+use App\Http\Resources\AddressDetailsLookupResource;
 use App\Integrations\GetAddress\Dtos\AddressCollectionDto;
+use App\Integrations\GetAddress\Dtos\AddressDetailsDto;
 use App\Integrations\GetAddress\Dtos\AddressDto;
+use App\Integrations\GetAddress\Requests\GetAddressByIdRequest;
 use App\Integrations\GetAddress\Requests\GetAddressesByPostCodeRequest;
 use GuzzleHttp\ClientInterface;
 use JsonException;
 use Psr\Http\Message\ResponseInterface;
 use RuntimeException;
 
-readonly class GetAddressApi implements GetAddress
+readonly class AddressLookupApi implements AddressLookup
 {
     public function __construct(private ClientInterface $guzzleClient)
     {
@@ -33,6 +36,18 @@ readonly class GetAddressApi implements GetAddress
     }
 
     /**
+     * @throws JsonException
+     */
+    public function getById(string $id): AddressDetailsDto
+    {
+        $response = $this->formatResponse(
+            $this->send(new GetAddressByIdRequest($id))
+        );
+
+        return AddressDetailsDto::fromResponse($response);
+    }
+
+    /**
      * @param  ResponseInterface  $response
      * @return array
      * @throws JsonException
@@ -50,7 +65,7 @@ readonly class GetAddressApi implements GetAddress
             default => [],
         };
 
-        $options['query'][] = config('services.get-address.token');
+        $options['query']['api-key'] = config('services.get-address.token');
 
         $response = $this->guzzleClient->request(
             method: $request->getMethod(),
