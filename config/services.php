@@ -35,4 +35,9 @@ return [
         ],
     ],
 
+    'get-address' => [
+        'api_url' => env('GET_ADDRESS_API_URL', 'https://api.getAddress.io'),
+        'token' => env('GET_ADDRESS_TOKEN'),
+    ],
+
 ];
